@@ -152,19 +152,20 @@ export default function EventDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-tofficient-br from-[#071018] to-[#0f1720] p-8">
+    <>
+    <div className="min-h-screen bg-gradient-to-br from-[#071018] to-[#0f1720] p-4 sm:p-8">
       <FadeInUp delay={0.1}>
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2">{event.title}</h1>
-              <p className="text-white/80">Event ID: {event.id}</p>
+              <h1 className="text-2xl sm:text-4xl font-bold text-white mb-2">{event.title}</h1>
+              <p className="text-white/80 text-sm sm:text-base">Event ID: {event.id}</p>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <button
                 onClick={toggleDataSource}
-                className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center space-x-2 ${
+                className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm ${
                   useMockData 
                     ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' 
                     : 'bg-green-500/20 text-green-400 border border-green-500/30'
@@ -177,9 +178,10 @@ export default function EventDetailPage() {
               </button>
               <Link
                 href="/dashboard"
-                className="px-6 py-2 bg-gradient-to-r from-emerald-600 via-lime-400 to-emerald-500 text-white rounded-lg hover:from-emerald-500 hover:via-lime-300 hover:to-emerald-600 transition-all duration-300 font-semibold"
+                className="px-4 sm:px-6 py-2 bg-gradient-to-r from-emerald-600 via-lime-400 to-emerald-500 text-white rounded-lg hover:from-emerald-500 hover:via-lime-300 hover:to-emerald-600 transition-all duration-300 font-semibold text-sm sm:text-base"
               >
-                ← Back to Dashboard
+                <span className="hidden sm:inline">← Back to Dashboard</span>
+                <span className="sm:hidden">← Back</span>
               </Link>
             </div>
           </div>
@@ -200,11 +202,11 @@ export default function EventDetailPage() {
           </div>
 
           {/* Metrics Grid */}
-          <StaggeredContainer className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <StaggeredContainer className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
             {/* Reliability Sources */}
             <StaggeredItem delay={0.1}>
-              <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-6">
-                <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+              <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-4 sm:p-6">
+                <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4 flex items-center">
                   <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
                   Reliability
                 </h3>
@@ -235,8 +237,8 @@ export default function EventDetailPage() {
 
             {/* Neutrality Sources */}
             <StaggeredItem delay={0.2}>
-              <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-6">
-                <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+              <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-4 sm:p-6">
+                <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4 flex items-center">
                   <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
                   Neutrality
                 </h3>
@@ -267,8 +269,8 @@ export default function EventDetailPage() {
 
             {/* Accuracy Sources */}
             <StaggeredItem delay={0.3}>
-              <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-6">
-                <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+              <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-4 sm:p-6">
+                <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4 flex items-center">
                   <div className="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
                   Accuracy
                 </h3>
@@ -299,8 +301,8 @@ export default function EventDetailPage() {
 
             {/* Metric Here Sources */}
             <StaggeredItem delay={0.4}>
-              <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-6">
-                <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+              <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-4 sm:p-6">
+                <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4 flex items-center">
                   <div className="w-3 h-3 bg-emerald-500 rounded-full mr-3"></div>
                   Overall
                 </h3>
@@ -338,6 +340,13 @@ export default function EventDetailPage() {
           </div>
         </div>
       </FadeInUp>
+
     </div>
+
+    {/* Team Footer - Outside main container */}
+    <p className="text-white/60 text-xs sm:text-sm text-center mt-6 sm:mt-8 mb-8 sm:mb-12 px-4">
+      With ❤️ from Necirvan, Yuyao, Cindy and Rayan.
+    </p>
+    </>
   );
 }

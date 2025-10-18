@@ -7,7 +7,7 @@ export const BentoGrid = ({
   return (
     <div
       className={cn(
-        "mx-auto grid max-w-7xl grid-cols-1 gap-4 md:auto-rows-[18rem] md:grid-cols-3",
+        "mx-auto grid max-w-7xl grid-cols-1 gap-4 sm:gap-6 md:gap-8 md:auto-rows-[300px] md:grid-cols-3",
         className
       )}>
       {children}
@@ -29,8 +29,8 @@ export const BentoGridItem = ({
         className
       )}>
       {header}
-      <div className="transition duration-200 group-hover/bento:translate-x-2">
-        {icon}
+      <div className="transition duration-200 group-hover/bento:translate-x-1">
+        {icon && icon}
         <div
           className="mt-2 mb-2 font-sans font-bold text-white">
           {title}
