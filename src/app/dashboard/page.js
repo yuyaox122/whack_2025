@@ -525,7 +525,7 @@ export default function Dashboard() {
             {/* Grid Layout */}
             <div className={layoutMode === 'grid' ? 'block' : 'hidden'}>
               <StaggeredContainer>
-              <BentoGrid className="max-w-4xl mx-auto px-4 sm:px-0">
+              <BentoGrid className="max-w-7xl mx-auto px-4 sm:px-0">
                 {events.map((item, i) => (
                     <StaggeredItem key={i} delay={i * 0.1}>
                   <div

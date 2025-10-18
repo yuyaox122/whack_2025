@@ -181,7 +181,7 @@ export default function BubbleMap({ data, width = 800, height = 600, onItemClick
     const friction = 0.98; // More friction to reduce momentum conservation
     const bounce = 0.75; // Less bounce for calmer movement
     const maxVelocity = 8; // Maximum velocity to prevent bubbles from moving too fast
-    const centerGravity = 0.002; // Weaker gravity toward center
+    const centerGravity = 0.0046; // Double gravity intensity toward center (0.0023 * 2)
     const softening = 0.1; // Softening factor for collisions
     
     // Drag state
@@ -263,11 +263,19 @@ export default function BubbleMap({ data, width = 800, height = 600, onItemClick
             other.x -= separationX;
             other.y -= separationY;
             
-            // Stop both bubbles (no momentum transfer)
-            d.vx = 0;
-            d.vy = 0;
-            other.vx = 0;
-            other.vy = 0;
+            // Small momentum transfer on collision
+            const collisionStrength = 0.3; // Small amount of momentum transfer
+            const relativeVx = d.vx - other.vx;
+            const relativeVy = d.vy - other.vy;
+            
+            // Calculate collision response with small momentum
+            const impulse = (relativeVx * dx + relativeVy * dy) / (distance * distance);
+            
+            // Apply small momentum transfer
+            d.vx -= impulse * dx * collisionStrength;
+            d.vy -= impulse * dy * collisionStrength;
+            other.vx += impulse * dx * collisionStrength;
+            other.vy += impulse * dy * collisionStrength;
           }
         });
       });
@@ -365,24 +373,27 @@ export default function BubbleMap({ data, width = 800, height = 600, onItemClick
         const shape = bubble.select('circle');
         const text = bubble.select('text');
         
+        // Bring hovered bubble to front
+        bubble.raise();
+        
         // Store original size
         if (!d.originalR) d.originalR = d.r;
         
-        // Grow shape
-        d.r *= 1.2;
+        // Calculate visual radius (larger) but keep collision radius unchanged
+        const visualR = d.originalR * 1.2;
         
-        // Update circle for regular bubbles (Birdeye style)
+        // Update circle for regular bubbles (Birdeye style) - use visual radius
         shape
           .transition()
           .duration(150)
-          .attr('r', d.r)
+          .attr('r', visualR)
           .attr('fill-opacity', 1.0)
           .attr('stroke', 'rgba(255,255,255,1)')
           .attr('stroke-width', 2)
           .attr('filter', 'drop-shadow(0 4px 20px rgba(0,0,0,0.25))');
       
-        // Update text size for hover
-        const fontSize = Math.max(12, Math.min(16, d.r / 6));
+        // Update text size for hover - use visual radius
+        const fontSize = Math.max(12, Math.min(16, visualR / 6));
         text
           .transition()
           .duration(150)
@@ -395,7 +406,7 @@ export default function BubbleMap({ data, width = 800, height = 600, onItemClick
         const shape = bubble.select('circle');
         const text = bubble.select('text');
         
-        // Restore original size
+        // Restore original size - use original radius for both visual and collision
         if (d.originalR) {
           d.r = d.originalR;
         }
@@ -404,14 +415,14 @@ export default function BubbleMap({ data, width = 800, height = 600, onItemClick
         shape
           .transition()
           .duration(150)
-          .attr('r', d.r)
+          .attr('r', d.originalR)
           .attr('fill-opacity', 0.9)
           .attr('stroke', 'rgba(255,255,255,0.8)')
           .attr('stroke-width', 1.5)
           .attr('filter', 'drop-shadow(0 2px 12px rgba(0,0,0,0.15))');
       
         // Restore text size
-        const fontSize = Math.max(12, Math.min(16, d.r / 6));
+        const fontSize = Math.max(12, Math.min(16, d.originalR / 6));
         text
           .transition()
           .duration(150)

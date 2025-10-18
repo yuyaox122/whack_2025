@@ -125,7 +125,7 @@ export default function EventDetailPage() {
           <p className="text-white/80 mb-4">{error}</p>
           <button
             onClick={() => router.back()}
-            className="px-6 py-2 bg-gradient-to-r from-emerald-600 via-lime-400 to-emerald-500 text-white rounded-lg hover:from-emerald-500 hover:via-lime-300 hover:to-emerald-600 transition-all duration-300"
+            className="px-6 py-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/30 hover:text-emerald-300 transition-all duration-300"
           >
             Go Back
           </button>
@@ -142,7 +142,7 @@ export default function EventDetailPage() {
           <p className="text-white/80 mb-4">The event you are looking for does not exist.</p>
           <button
             onClick={() => router.push('/dashboard')}
-            className="px-6 py-2 bg-gradient-to-r from-emerald-600 via-lime-400 to-emerald-500 text-white rounded-lg hover:from-emerald-500 hover:via-lime-300 hover:to-emerald-600 transition-all duration-300"
+            className="px-6 py-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/30 hover:text-emerald-300 transition-all duration-300"
           >
             Go to Dashboard
           </button>
@@ -178,7 +178,7 @@ export default function EventDetailPage() {
               </button>
               <Link
                 href="/dashboard"
-                className="px-4 sm:px-6 py-2 bg-gradient-to-r from-emerald-600 via-lime-400 to-emerald-500 text-white rounded-lg hover:from-emerald-500 hover:via-lime-300 hover:to-emerald-600 transition-all duration-300 font-semibold text-sm sm:text-base"
+                className="px-4 sm:px-6 py-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/30 hover:text-emerald-300 transition-all duration-300 font-semibold text-sm sm:text-base"
               >
                 <span className="hidden sm:inline">← Back to Dashboard</span>
                 <span className="sm:hidden">← Back</span>
