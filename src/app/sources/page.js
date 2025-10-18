@@ -137,12 +137,15 @@ export default function SourcesPage() {
           setSources(mockSources);
         } else {
           // Real FastAPI call
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/sources`);
+          console.log('Fetching from FastAPI...');
+          const response = await fetch('http://127.0.0.1:8000/sources');
+          console.log('Response status:', response.status);
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
-          const data = await response.json();
-          setSources(data.sources || data);
+          const result = await response.json();
+          console.log('API result:', result);
+          setSources(result.result || []);
         }
       } catch (err) {
         setError(err.message);
@@ -203,24 +206,30 @@ export default function SourcesPage() {
         setSources(prev => [newSource, ...prev]);
       } else {
         // Real API submission
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/sources`, {
+        console.log('Submitting to FastAPI...', formData);
+        const formDataToSend = new FormData();
+        formDataToSend.append('name', formData.name);
+        formDataToSend.append('url', formData.url);
+        formDataToSend.append('description', formData.description || '');
+        formDataToSend.append('category', 'User Added');
+        
+        const response = await fetch('http://127.0.0.1:8000/sources', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name: formData.name,
-            url: formData.url,
-            description: formData.description
-          })
+          body: formDataToSend
         });
+        console.log('Submit response status:', response.status);
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        const newSource = await response.json();
-        setSources(prev => [newSource, ...prev]);
+        const result = await response.json();
+        if (result.result) {
+          // Refresh the sources list after successful addition
+          const sourcesResponse = await fetch('http://127.0.0.1:8000/sources');
+          const sourcesResult = await sourcesResponse.json();
+          setSources(sourcesResult.result || []);
+        }
       }
       
       // Reset form and close modal
@@ -249,7 +258,7 @@ export default function SourcesPage() {
         setSources(prev => prev.filter(source => source.id !== sourceId));
       } else {
         // Real API deletion
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/sources/${sourceId}`, {
+        const response = await fetch(`http://127.0.0.1:8000/sources/${sourceId}`, {
           method: 'DELETE'
         });
         

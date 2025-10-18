@@ -302,7 +302,7 @@ export default function EventDetailPage() {
               <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-6">
                 <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
                   <div className="w-3 h-3 bg-emerald-500 rounded-full mr-3"></div>
-                  Metric Here
+                  Overall
                 </h3>
                 <div className="space-y-3">
                   {event.metric_here_sources?.map((source, index) => (

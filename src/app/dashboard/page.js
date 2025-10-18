@@ -4,13 +4,16 @@ import { BentoGrid, BentoGridItem } from "../../components/ui/bento-grid";
 import BubbleMap from "../../components/ui/bubble-map";
 import { StaggeredContainer, StaggeredItem, FadeInUp, SlideInFromLeft, SlideInFromRight } from "../../components/ui/page-transition";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Dashboard() {
   const [layoutMode, setLayoutMode] = useState('grid'); // 'grid' or 'bubble'
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [useMockData, setUseMockData] = useState(true);
   
   // Mock data for development
-  const items = [
+  const mockItems = [
     {
       id: '1',
       title: 'Global Climate Accord Reached',
@@ -139,14 +142,49 @@ export default function Dashboard() {
     },
   ];
 
+  // Fetch events from API
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setLoading(true);
+      
+      try {
+        if (useMockData) {
+          // Use mock data
+          setEvents(mockItems);
+        } else {
+          // Fetch from FastAPI
+          console.log('Fetching events from FastAPI...');
+          const response = await fetch('http://127.0.0.1:8000/events');
+          console.log('Events response status:', response.status);
+          if (!response.ok) {
+            throw new Error('Failed to fetch events');
+          }
+          const result = await response.json();
+          console.log('Events API result:', result);
+          // Transform API data to match expected format
+          const transformedEvents = result.events || result || [];
+          setEvents(transformedEvents);
+        }
+      } catch (err) {
+        console.error('Error fetching events:', err);
+        // Fallback to mock data on error
+        setEvents(mockItems);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, [useMockData]);
+
   const handleItemClick = (item) => {
     // Navigate directly to event details page
     window.location.href = `/events/${item.id}`;
   };
 
 
-  // Transform items for bubblemap
-  const bubbleData = items.map((item, index) => ({
+  // Transform events for bubblemap
+  const bubbleData = events.map((item, index) => ({
     id: index.toString(),
     title: item.title,
     description: item.description,
@@ -205,6 +243,19 @@ export default function Dashboard() {
                     Bubble
                   </button>
                 </div>
+                <button
+                  onClick={() => setUseMockData(!useMockData)}
+                  className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-2 ${
+                    useMockData 
+                      ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' 
+                      : 'bg-green-500/20 text-green-400 border border-green-500/30'
+                  }`}
+                >
+                  {!useMockData && (
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  )}
+                  <span>{useMockData ? 'Mock Data' : 'Live Data'}</span>
+                </button>
                     <div className="w-px h-6 bg-emerald-500/30 dark:bg-emerald-500/30 opacity-50"></div>
                 <Link 
                   href="/"
@@ -235,11 +286,29 @@ export default function Dashboard() {
 
         <div className="p-8">
           <div className="max-w-7xl mx-auto">
+            {/* Status Banner */}
+            {useMockData && (
+              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-6">
+                <p className="text-yellow-400 text-center">
+                  <strong>Development Mode:</strong> Using mock data. Connect your FastAPI backend to see real events.
+                </p>
+              </div>
+            )}
+
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+                  <p className="text-white/80">Loading events...</p>
+                </div>
+              </div>
+            ) : (
+              <>
             {/* Grid Layout */}
             <div className={layoutMode === 'grid' ? 'block' : 'hidden'}>
               <StaggeredContainer>
               <BentoGrid className="max-w-4xl mx-auto">
-                {items.map((item, i) => (
+                {events.map((item, i) => (
                     <StaggeredItem key={i} delay={i * 0.1}>
                   <div
                     onClick={() => handleItemClick(item)}
@@ -276,6 +345,8 @@ export default function Dashboard() {
                 </StaggeredItem>
               </StaggeredContainer>
             </div>
+              </>
+            )}
           </div>
         </div>
 
