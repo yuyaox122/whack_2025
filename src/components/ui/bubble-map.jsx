@@ -135,6 +135,10 @@ export default function BubbleMap({ data, width = 800, height = 600, onItemClick
     // Drag state
     let draggedBubble = null;
     let dragOffset = { x: 0, y: 0 };
+    let isDragging = false;
+    let wasDragging = false;
+    let dragStartPos = { x: 0, y: 0 };
+    let dragThreshold = 5; // Minimum distance to consider it a drag
 
     function physicsStep() {
       bubbles.each(function(d) {
@@ -241,12 +245,28 @@ export default function BubbleMap({ data, width = 800, height = 600, onItemClick
       if (!draggedBubble) return;
       
       const rect = svgRef.current.getBoundingClientRect();
-      draggedBubble.x = event.clientX - rect.left - dragOffset.x;
-      draggedBubble.y = event.clientY - rect.top - dragOffset.y;
+      const currentX = event.clientX - rect.left;
+      const currentY = event.clientY - rect.top;
       
-      // Keep bubble within bounds
-      draggedBubble.x = Math.max(draggedBubble.r, Math.min(width - draggedBubble.r, draggedBubble.x));
-      draggedBubble.y = Math.max(draggedBubble.r, Math.min(height - draggedBubble.r, draggedBubble.y));
+      // Check if we've moved enough to consider it a drag
+      const distance = Math.sqrt(
+        Math.pow(currentX - dragStartPos.x, 2) + 
+        Math.pow(currentY - dragStartPos.y, 2)
+      );
+      
+      if (distance > dragThreshold) {
+        isDragging = true;
+        wasDragging = true;
+      }
+      
+      if (isDragging) {
+        draggedBubble.x = currentX - dragOffset.x;
+        draggedBubble.y = currentY - dragOffset.y;
+        
+        // Keep bubble within bounds
+        draggedBubble.x = Math.max(draggedBubble.r, Math.min(width - draggedBubble.r, draggedBubble.x));
+        draggedBubble.y = Math.max(draggedBubble.r, Math.min(height - draggedBubble.r, draggedBubble.y));
+      }
     };
 
     const handleMouseUp = () => {
@@ -260,7 +280,14 @@ export default function BubbleMap({ data, width = 800, height = 600, onItemClick
         draggedBubble.vx = (Math.random() - 0.5) * 3;
         draggedBubble.vy = (Math.random() - 0.5) * 3;
         
+        // Reset drag state but keep wasDragging flag for a short time
         draggedBubble = null;
+        isDragging = false;
+        
+        // Clear the wasDragging flag after a short delay to allow click events to check it
+        setTimeout(() => {
+          wasDragging = false;
+        }, 50);
       }
     };
 
@@ -325,18 +352,26 @@ export default function BubbleMap({ data, width = 800, height = 600, onItemClick
       })
       .on('click', function(event, d) {
         event.preventDefault();
-        if (onItemClick) {
-          // d is the actual data item since we bound data directly to bubbles
+        // Only trigger click if we're not dragging and haven't just finished dragging
+        if (!isDragging && !wasDragging && onItemClick) {
           onItemClick(d);
         }
       })
       .on('mousedown', function(event, d) {
         event.preventDefault();
-        // Start dragging
+        // Start potential drag
         draggedBubble = d;
         const rect = svgRef.current.getBoundingClientRect();
         dragOffset.x = event.clientX - rect.left - d.x;
         dragOffset.y = event.clientY - rect.top - d.y;
+        
+        // Record starting position for drag detection
+        dragStartPos.x = event.clientX - rect.left;
+        dragStartPos.y = event.clientY - rect.top;
+        
+        // Reset drag state
+        isDragging = false;
+        wasDragging = false;
         
         // Stop the bubble's velocity
         d.vx = 0;
