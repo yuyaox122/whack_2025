@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collision";
-import { Button, MovingBorder } from "@/components/ui/moving-border";
+import { BackgroundBeamsWithCollision } from "../components/ui/background-beams-with-collision";
+import { Button, MovingBorder } from "../components/ui/moving-border";
 
 export default function Home() {
   return (

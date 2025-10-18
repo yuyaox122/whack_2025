@@ -1,0 +1,343 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { StaggeredContainer, StaggeredItem, FadeInUp } from '../../../components/ui/page-transition';
+
+export default function EventDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const eventId = params.id;
+
+  const [event, setEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [useMockData, setUseMockData] = useState(true);
+
+  // Mock data for development
+  const mockEvent = {
+    id: eventId,
+    title: 'Global Climate Accord Reached',
+    description: 'Leaders from around the world have signed a landmark agreement to combat climate change, setting ambitious targets for carbon reduction and renewable energy adoption.',
+    category: 'Environment',
+    cluster_size: 15,
+    relevance_score: 9.2,
+    trending_score: 8.5,
+    keywords: ['climate', 'accord', 'global', 'environment'],
+    reliability_sources: [
+      { name: 'The New York Times', score: 9.5, url: 'nytimes.com' },
+      { name: 'BBC News', score: 9.3, url: 'bbc.com' },
+      { name: 'Reuters', score: 9.7, url: 'reuters.com' },
+      { name: 'Associated Press', score: 9.6, url: 'ap.org' },
+      { name: 'The Guardian', score: 8.9, url: 'theguardian.com' }
+    ],
+    neutrality_sources: [
+      { name: 'Reuters', score: 9.8, url: 'reuters.com' },
+      { name: 'Associated Press', score: 9.5, url: 'ap.org' },
+      { name: 'BBC News', score: 9.2, url: 'bbc.com' },
+      { name: 'The New York Times', score: 8.7, url: 'nytimes.com' },
+      { name: 'Bloomberg', score: 8.4, url: 'bloomberg.com' }
+    ],
+    accuracy_sources: [
+      { name: 'Nature', score: 9.9, url: 'nature.com' },
+      { name: 'Scientific American', score: 9.7, url: 'scientificamerican.com' },
+      { name: 'The New York Times', score: 9.4, url: 'nytimes.com' },
+      { name: 'BBC News', score: 9.1, url: 'bbc.com' },
+      { name: 'Reuters', score: 8.9, url: 'reuters.com' }
+    ],
+    metric_here_sources: [
+      { name: 'Example Source 1', score: 8.5, url: 'example1.com' },
+      { name: 'Example Source 2', score: 7.8, url: 'example2.com' },
+      { name: 'Example Source 3', score: 8.2, url: 'example3.com' },
+      { name: 'Example Source 4', score: 7.9, url: 'example4.com' }
+    ],
+    created_at: '2024-01-15T10:30:00Z',
+    updated_at: '2024-01-15T14:20:00Z'
+  };
+
+  useEffect(() => {
+    const fetchEventDetail = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        if (useMockData) {
+          // Simulate API delay
+          await new Promise(resolve => setTimeout(resolve, 500));
+          setEvent(mockEvent);
+        } else {
+          // Real FastAPI call
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/events/${eventId}`);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          setEvent(data.event);
+        }
+      } catch (err) {
+        setError(err.message);
+        // Fallback to mock data on error
+        setEvent(mockEvent);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (eventId) {
+      fetchEventDetail();
+    }
+  }, [eventId, useMockData]);
+
+  const toggleDataSource = () => {
+    setUseMockData(!useMockData);
+  };
+
+  const getScoreColor = (score) => {
+    if (score > 8.5) return 'text-green-400';
+    if (score > 7) return 'text-yellow-400';
+    return 'text-red-400';
+  };
+
+  const getScoreBg = (score) => {
+    if (score > 8.5) return 'bg-green-500/20';
+    if (score > 7) return 'bg-yellow-500/20';
+    return 'bg-red-500/20';
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#071018] to-[#0f1720] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+          <p className="text-white/80">Loading event details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !event) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#071018] to-[#0f1720] flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-400 text-6xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-white mb-2">Error Loading Event</h2>
+          <p className="text-white/80 mb-4">{error}</p>
+          <button
+            onClick={() => router.back()}
+            className="px-6 py-2 bg-gradient-to-r from-emerald-600 via-lime-400 to-emerald-500 text-white rounded-lg hover:from-emerald-500 hover:via-lime-300 hover:to-emerald-600 transition-all duration-300"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#071018] to-[#0f1720] flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-white mb-2">Event Not Found</h2>
+          <p className="text-white/80 mb-4">The event you are looking for does not exist.</p>
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="px-6 py-2 bg-gradient-to-r from-emerald-600 via-lime-400 to-emerald-500 text-white rounded-lg hover:from-emerald-500 hover:via-lime-300 hover:to-emerald-600 transition-all duration-300"
+          >
+            Go to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-tofficient-br from-[#071018] to-[#0f1720] p-8">
+      <FadeInUp delay={0.1}>
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-4xl font-bold text-white mb-2">{event.title}</h1>
+              <p className="text-white/80">Event ID: {event.id}</p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={toggleDataSource}
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center space-x-2 ${
+                  useMockData 
+                    ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' 
+                    : 'bg-green-500/20 text-green-400 border border-green-500/30'
+                }`}
+              >
+                {!useMockData && (
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                )}
+                <span>{useMockData ? 'Mock Data' : 'Live Data'}</span>
+              </button>
+              <Link
+                href="/dashboard"
+                className="px-6 py-2 bg-gradient-to-r from-emerald-600 via-lime-400 to-emerald-500 text-white rounded-lg hover:from-emerald-500 hover:via-lime-300 hover:to-emerald-600 transition-all duration-300 font-semibold"
+              >
+                ← Back to Dashboard
+              </Link>
+            </div>
+          </div>
+
+          {/* Status Banner */}
+          {useMockData && (
+            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-8">
+              <p className="text-yellow-400 text-center">
+                <strong>Development Mode:</strong> Using mock data. Connect your FastAPI backend to see real event details.
+              </p>
+            </div>
+          )}
+
+          {/* Event Description */}
+          <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-6 mb-8">
+            <h2 className="text-2xl font-bold text-white mb-4">Event Description</h2>
+            <p className="text-white/80 text-lg leading-relaxed">{event.description}</p>
+          </div>
+
+          {/* Metrics Grid */}
+          <StaggeredContainer className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Reliability Sources */}
+            <StaggeredItem delay={0.1}>
+              <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-6">
+                <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+                  <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                  Reliability
+                </h3>
+                <div className="space-y-3">
+                  {event.reliability_sources?.map((source, index) => (
+                    <div key={index} className="bg-white/5 p-4 rounded-lg border border-white/10 hover:border-green-500/50 transition-all duration-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-white font-medium">{source.name}</h4>
+                        <div className={`${getScoreBg(source.score)} px-3 py-1 rounded-full`}>
+                          <span className={`${getScoreColor(source.score)} font-bold text-sm`}>
+                            {source.score}
+                          </span>
+                        </div>
+                      </div>
+                      <a 
+                        href={`https://${source.url}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-green-400 hover:text-green-300 text-sm underline"
+                      >
+                        {source.url}
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </StaggeredItem>
+
+            {/* Neutrality Sources */}
+            <StaggeredItem delay={0.2}>
+              <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-6">
+                <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                  Neutrality
+                </h3>
+                <div className="space-y-3">
+                  {event.neutrality_sources?.map((source, index) => (
+                    <div key={index} className="bg-white/5 p-4 rounded-lg border border-white/10 hover:border-blue-500/50 transition-all duration-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-white font-medium">{source.name}</h4>
+                        <div className={`${getScoreBg(source.score)} px-3 py-1 rounded-full`}>
+                          <span className={`${getScoreColor(source.score)} font-bold text-sm`}>
+                            {source.score}
+                          </span>
+                        </div>
+                      </div>
+                      <a 
+                        href={`https://${source.url}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:text-blue-300 text-sm underline"
+                      >
+                        {source.url}
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </StaggeredItem>
+
+            {/* Accuracy Sources */}
+            <StaggeredItem delay={0.3}>
+              <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-6">
+                <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+                  <div className="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
+                  Accuracy
+                </h3>
+                <div className="space-y-3">
+                  {event.accuracy_sources?.map((source, index) => (
+                    <div key={index} className="bg-white/5 p-4 rounded-lg border border-white/10 hover:border-purple-500/50 transition-all duration-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-white font-medium">{source.name}</h4>
+                        <div className={`${getScoreBg(source.score)} px-3 py-1 rounded-full`}>
+                          <span className={`${getScoreColor(source.score)} font-bold text-sm`}>
+                            {source.score}
+                          </span>
+                        </div>
+                      </div>
+                      <a 
+                        href={`https://${source.url}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-purple-400 hover:text-purple-300 text-sm underline"
+                      >
+                        {source.url}
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </StaggeredItem>
+
+            {/* Metric Here Sources */}
+            <StaggeredItem delay={0.4}>
+              <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-6">
+                <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+                  <div className="w-3 h-3 bg-emerald-500 rounded-full mr-3"></div>
+                  Metric Here
+                </h3>
+                <div className="space-y-3">
+                  {event.metric_here_sources?.map((source, index) => (
+                    <div key={index} className="bg-white/5 p-4 rounded-lg border border-white/10 hover:border-emerald-500/50 transition-all duration-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-white font-medium">{source.name}</h4>
+                        <div className={`${getScoreBg(source.score)} px-3 py-1 rounded-full`}>
+                          <span className={`${getScoreColor(source.score)} font-bold text-sm`}>
+                            {source.score}
+                          </span>
+                        </div>
+                      </div>
+                      <a 
+                        href={`https://${source.url}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-emerald-400 hover:text-emerald-300 text-sm underline"
+                      >
+                        {source.url}
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </StaggeredItem>
+          </StaggeredContainer>
+
+          {/* Footer */}
+          <div className="mt-12 text-center">
+            <p className="text-white/60">
+              Event details • {useMockData ? 'Mock data for development' : 'Live data from FastAPI'}
+            </p>
+          </div>
+        </div>
+      </FadeInUp>
+    </div>
+  );
+}
