@@ -1,4 +1,9 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  devIndicators: {
+    buildActivity: false,
+    position: 'bottom-right',
+  },
+};
 
 export default nextConfig;
