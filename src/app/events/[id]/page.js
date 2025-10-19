@@ -14,6 +14,8 @@ export default function EventDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [useMockData, setUseMockData] = useState(true);
+  const [findingSources, setFindingSources] = useState(false);
+  const [abortController, setAbortController] = useState(null);
 
   // Mock data for development
   const mockEvent = {
@@ -89,8 +91,65 @@ export default function EventDetailPage() {
     }
   }, [eventId, useMockData]);
 
+  // Cleanup effect to abort ongoing requests when component unmounts
+  useEffect(() => {
+    return () => {
+      if (abortController) {
+        abortController.abort();
+      }
+    };
+  }, [abortController]);
+
   const toggleDataSource = () => {
     setUseMockData(!useMockData);
+  };
+
+  const findMoreSources = async () => {
+    if (!event || findingSources) return;
+    
+    setFindingSources(true);
+    
+    // Store the AbortController to allow cancellation
+    const controller = new AbortController();
+    setAbortController(controller);
+    
+    try {
+      const response = await fetch('/api/find-sources', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: event.title,
+          eventId: event.id
+        }),
+        signal: controller.signal, // Allow cancellation
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to find more sources');
+      }
+
+      const newSources = await response.json();
+      
+      // Add new sources to existing sources
+      setEvent(prevEvent => ({
+        ...prevEvent,
+        reliability_sources: [...prevEvent.reliability_sources, ...newSources.reliability_sources],
+        engagement_sources: [...prevEvent.engagement_sources, ...newSources.engagement_sources],
+        metric_here_sources: [...prevEvent.metric_here_sources, ...newSources.metric_here_sources]
+      }));
+      
+    } catch (error) {
+      // Only log error if it's not an abort error
+      if (error.name !== 'AbortError') {
+        console.error('Error finding more sources:', error);
+        // Could add a toast notification here
+      }
+    } finally {
+      setFindingSources(false);
+      setAbortController(null);
+    }
   };
 
   const getScoreColor = (score) => {
@@ -125,7 +184,7 @@ export default function EventDetailPage() {
           <p className="text-white/80 mb-4">{error}</p>
           <button
             onClick={() => router.back()}
-            className="px-6 py-2 bg-gradient-to-r from-emerald-600 via-lime-400 to-emerald-500 text-white rounded-lg hover:from-emerald-500 hover:via-lime-300 hover:to-emerald-600 transition-all duration-300"
+            className="px-6 py-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/30 hover:text-emerald-300 transition-all duration-300"
           >
             Go Back
           </button>
@@ -142,7 +201,7 @@ export default function EventDetailPage() {
           <p className="text-white/80 mb-4">The event you are looking for does not exist.</p>
           <button
             onClick={() => router.push('/dashboard')}
-            className="px-6 py-2 bg-gradient-to-r from-emerald-600 via-lime-400 to-emerald-500 text-white rounded-lg hover:from-emerald-500 hover:via-lime-300 hover:to-emerald-600 transition-all duration-300"
+            className="px-6 py-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/30 hover:text-emerald-300 transition-all duration-300"
           >
             Go to Dashboard
           </button>
@@ -152,19 +211,20 @@ export default function EventDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-tofficient-br from-[#071018] to-[#0f1720] p-8">
+    <>
+    <div className="min-h-screen bg-gradient-to-br from-[#071018] to-[#0f1720] p-4 sm:p-8">
       <FadeInUp delay={0.1}>
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2">{event.title}</h1>
-              <p className="text-white/80">Event ID: {event.id}</p>
+              <h1 className="text-2xl sm:text-4xl font-bold text-white mb-2">{event.title}</h1>
+              <p className="text-white/80 text-sm sm:text-base">Event ID: {event.id}</p>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <button
                 onClick={toggleDataSource}
-                className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center space-x-2 ${
+                className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm ${
                   useMockData 
                     ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' 
                     : 'bg-green-500/20 text-green-400 border border-green-500/30'
@@ -177,9 +237,10 @@ export default function EventDetailPage() {
               </button>
               <Link
                 href="/dashboard"
-                className="px-6 py-2 bg-gradient-to-r from-emerald-600 via-lime-400 to-emerald-500 text-white rounded-lg hover:from-emerald-500 hover:via-lime-300 hover:to-emerald-600 transition-all duration-300 font-semibold"
+                className="px-4 sm:px-6 py-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/30 hover:text-emerald-300 transition-all duration-300 font-semibold text-sm sm:text-base"
               >
-                ← Back to Dashboard
+                <span className="hidden sm:inline">← Back to Dashboard</span>
+                <span className="sm:hidden">← Back</span>
               </Link>
             </div>
           </div>
@@ -200,11 +261,11 @@ export default function EventDetailPage() {
           </div>
 
           {/* Metrics Grid */}
-          <StaggeredContainer className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <StaggeredContainer className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
             {/* Reliability Sources */}
             <StaggeredItem delay={0.1}>
-              <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-6">
-                <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+              <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-4 sm:p-6">
+                <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4 flex items-center">
                   <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
                   Reliability
                 </h3>
@@ -235,8 +296,8 @@ export default function EventDetailPage() {
 
             {/* Neutrality Sources */}
             <StaggeredItem delay={0.2}>
-              <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-6">
-                <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+              <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-4 sm:p-6">
+                <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4 flex items-center">
                   <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
                   Neutrality
                 </h3>
@@ -267,8 +328,8 @@ export default function EventDetailPage() {
 
             {/* Accuracy Sources */}
             <StaggeredItem delay={0.3}>
-              <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-6">
-                <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+              <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-4 sm:p-6">
+                <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4 flex items-center">
                   <div className="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
                   Accuracy
                 </h3>
@@ -299,8 +360,8 @@ export default function EventDetailPage() {
 
             {/* Metric Here Sources */}
             <StaggeredItem delay={0.4}>
-              <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-6">
-                <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+              <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-4 sm:p-6">
+                <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4 flex items-center">
                   <div className="w-3 h-3 bg-emerald-500 rounded-full mr-3"></div>
                   Overall
                 </h3>
@@ -330,6 +391,32 @@ export default function EventDetailPage() {
             </StaggeredItem>
           </StaggeredContainer>
 
+          {/* Find More Sources Button */}
+          <div className="mt-8 text-center">
+            <button
+              onClick={findMoreSources}
+              disabled={findingSources}
+              className="inline-flex items-center px-6 py-3 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/30 hover:text-emerald-300 transition-all duration-300 font-semibold text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {findingSources ? (
+                <>
+                  <svg className="animate-spin w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Finding Sources...
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  Find More Sources
+                </>
+              )}
+            </button>
+          </div>
+
           {/* Footer */}
           <div className="mt-12 text-center">
             <p className="text-white/60">
@@ -338,6 +425,13 @@ export default function EventDetailPage() {
           </div>
         </div>
       </FadeInUp>
+
     </div>
+
+    {/* Team Footer - Outside main container */}
+    <p className="text-white/60 text-xs sm:text-sm text-center mt-6 sm:mt-8 mb-8 sm:mb-12 px-4">
+      Made with ❤️ from Necirvan, Yuyao, Cindy and Rayan.
+    </p>
+    </>
   );
 }

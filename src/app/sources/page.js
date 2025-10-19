@@ -25,11 +25,8 @@ export default function SourcesPage() {
       url: 'nytimes.com',
       credibility_score: 9.2,
       engagement_score: 8.7,
-      bias_score: 7.8,
-      sentiment_score: 6.9,
       article_title: 'Breaking News: Global Summit Concludes',
       article_url: 'nytimes.com/article1',
-      published_at: '2024-01-15T10:30:00Z',
       category: 'Politics'
     },
     {
@@ -38,11 +35,8 @@ export default function SourcesPage() {
       url: 'bbc.com',
       credibility_score: 9.5,
       engagement_score: 8.9,
-      bias_score: 8.1,
-      sentiment_score: 7.2,
       article_title: 'Analysis: Economic Impact of New Policies',
       article_url: 'bbc.com/article2',
-      published_at: '2024-01-14T15:45:00Z',
       category: 'Economics'
     },
     {
@@ -51,11 +45,8 @@ export default function SourcesPage() {
       url: 'reuters.com',
       credibility_score: 9.8,
       engagement_score: 8.4,
-      bias_score: 8.7,
-      sentiment_score: 7.5,
       article_title: 'Tech Giant Announces New AI Initiative',
       article_url: 'reuters.com/article3',
-      published_at: '2024-01-13T09:15:00Z',
       category: 'Technology'
     },
     {
@@ -64,11 +55,8 @@ export default function SourcesPage() {
       url: 'theguardian.com',
       credibility_score: 8.9,
       engagement_score: 8.2,
-      bias_score: 7.2,
-      sentiment_score: 6.8,
       article_title: 'Environmental Concerns Rise Amidst Climate Change',
       article_url: 'theguardian.com/article4',
-      published_at: '2024-01-12T14:20:00Z',
       category: 'Environment'
     },
     {
@@ -77,11 +65,8 @@ export default function SourcesPage() {
       url: 'cnn.com',
       credibility_score: 8.7,
       engagement_score: 9.1,
-      bias_score: 6.5,
-      sentiment_score: 7.8,
       article_title: 'Political Tensions Escalate in Region',
       article_url: 'cnn.com/article5',
-      published_at: '2024-01-11T11:30:00Z',
       category: 'Politics'
     },
     {
@@ -90,11 +75,8 @@ export default function SourcesPage() {
       url: 'ap.org',
       credibility_score: 9.6,
       engagement_score: 8.3,
-      bias_score: 9.1,
-      sentiment_score: 7.9,
       article_title: 'International Trade Agreement Reached',
       article_url: 'ap.org/article6',
-      published_at: '2024-01-10T16:45:00Z',
       category: 'Economics'
     },
     {
@@ -103,11 +85,8 @@ export default function SourcesPage() {
       url: 'bloomberg.com',
       credibility_score: 9.3,
       engagement_score: 8.8,
-      bias_score: 8.4,
-      sentiment_score: 7.1,
       article_title: 'Market Analysis: Stock Prices Surge',
       article_url: 'bloomberg.com/article7',
-      published_at: '2024-01-09T13:15:00Z',
       category: 'Economics'
     },
     {
@@ -116,11 +95,8 @@ export default function SourcesPage() {
       url: 'nature.com',
       credibility_score: 9.9,
       engagement_score: 7.8,
-      bias_score: 9.5,
-      sentiment_score: 8.2,
       article_title: 'Breakthrough in Quantum Computing Research',
       article_url: 'nature.com/article8',
-      published_at: '2024-01-08T10:00:00Z',
       category: 'Science'
     }
   ];
@@ -190,19 +166,16 @@ export default function SourcesPage() {
     try {
       if (useMockData) {
         // Mock submission - just add to local state
-        const newSource = {
-          id: `src${Date.now()}`,
-          name: formData.name,
-          url: formData.url,
-          credibility_score: 7.5,
-          engagement_score: 6.8,
-          bias_score: 7.2,
-          sentiment_score: 6.9,
-          article_title: formData.description || 'User Added Source',
-          article_url: formData.url,
-          published_at: new Date().toISOString(),
-          category: 'User Added'
-        };
+          const newSource = {
+            id: `src${Date.now()}`,
+            name: formData.name,
+            url: formData.url,
+            credibility_score: 7.5,
+            engagement_score: 6.8,
+            article_title: formData.description || 'User Added Source',
+            article_url: formData.url,
+            category: 'User Added'
+          };
         setSources(prev => [newSource, ...prev]);
       } else {
         // Real API submission
@@ -285,19 +258,20 @@ export default function SourcesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#071018] to-[#0f1720] p-8">
+    <>
+    <div className="min-h-screen bg-gradient-to-br from-[#071018] to-[#0f1720] p-4 sm:p-8">
       <FadeInUp delay={0.1}>
         <div className="max-w-6xl mx-auto">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2">Source List</h1>
-              <p className="text-white/80">All news sources and their credibility metrics</p>
+              <h1 className="text-2xl sm:text-4xl font-bold text-white mb-2">Source List</h1>
+              <p className="text-white/80 text-sm sm:text-base">All news sources and their credibility metrics</p>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <button
                 onClick={toggleDataSource}
-                className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center space-x-2 ${
+                className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm ${
                   useMockData 
                     ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' 
                     : 'bg-green-500/20 text-green-400 border border-green-500/30'
@@ -310,9 +284,10 @@ export default function SourcesPage() {
               </button>
               <Link
                 href="/dashboard"
-                className="px-6 py-2 bg-gradient-to-r from-emerald-600 via-lime-400 to-emerald-500 text-white rounded-lg hover:from-emerald-500 hover:via-lime-300 hover:to-emerald-600 transition-all duration-300 font-semibold"
+                className="px-4 sm:px-6 py-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/30 hover:text-emerald-300 transition-all duration-300 font-semibold text-sm sm:text-base"
               >
-                ← Back to Dashboard
+                <span className="hidden sm:inline">← Back to Dashboard</span>
+                <span className="sm:hidden">← Back</span>
               </Link>
             </div>
           </div>
@@ -327,10 +302,10 @@ export default function SourcesPage() {
           )}
 
           {/* Sources Grid */}
-          <StaggeredContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <StaggeredContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {sources.map((source, index) => (
               <StaggeredItem key={source.id} delay={index * 0.1}>
-                <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-6 hover:border-emerald-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10 group relative">
+                <div className="bg-black/90 backdrop-blur-md rounded-xl border border-white/20 p-4 sm:p-6 hover:border-emerald-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10 group relative">
                   {/* Delete Button - appears when mouse gets close to bottom right */}
                   <button
                     onClick={() => handleDeleteSource(source.id)}
@@ -344,7 +319,7 @@ export default function SourcesPage() {
                   
                   {/* Source Header */}
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-bold text-white truncate">{source.name}</h3>
+                    <h3 className="text-lg sm:text-xl font-bold text-white truncate">{source.name}</h3>
                     <span className="text-xs bg-white/10 text-white/70 px-2 py-1 rounded-full">
                       {source.category}
                     </span>
@@ -352,49 +327,33 @@ export default function SourcesPage() {
 
                   {/* Article Info */}
                   <div className="mb-4">
-                    <h4 className="text-white/90 font-medium mb-2 line-clamp-2">{source.article_title}</h4>
+                    <h4 className="text-white/90 font-medium mb-2 line-clamp-2 text-sm sm:text-base">{source.article_title}</h4>
                     <a 
-                      href={`https://${source.url}`} 
+                      href={source.url.startsWith('http') ? source.url : `https://${source.url}`} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-emerald-400 hover:text-emerald-300 text-sm underline"
+                      className="text-emerald-400 hover:text-emerald-300 text-xs sm:text-sm underline break-all"
                     >
                       {source.url}
                     </a>
                   </div>
 
                   {/* Metrics */}
-                  <div className="grid grid-cols-2 gap-3 mb-4">
-                    <div className={`${getScoreBg(source.credibility_score)} rounded-lg p-3`}>
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4">
+                    <div className={`${getScoreBg(source.credibility_score)} rounded-lg p-2 sm:p-3`}>
                       <p className="text-white/70 text-xs">Credibility</p>
-                      <p className={`${getScoreColor(source.credibility_score)} font-bold text-lg`}>
+                      <p className={`${getScoreColor(source.credibility_score)} font-bold text-sm sm:text-lg`}>
                         {source.credibility_score}
                       </p>
                     </div>
-                    <div className={`${getScoreBg(source.engagement_score)} rounded-lg p-3`}>
+                    <div className={`${getScoreBg(source.engagement_score)} rounded-lg p-2 sm:p-3`}>
                       <p className="text-white/70 text-xs">Engagement</p>
-                      <p className={`${getScoreColor(source.engagement_score)} font-bold text-lg`}>
+                      <p className={`${getScoreColor(source.engagement_score)} font-bold text-sm sm:text-lg`}>
                         {source.engagement_score}
-                      </p>
-                    </div>
-                    <div className={`${getScoreBg(source.bias_score)} rounded-lg p-3`}>
-                      <p className="text-white/70 text-xs">Bias Score</p>
-                      <p className={`${getScoreColor(source.bias_score)} font-bold text-lg`}>
-                        {source.bias_score}
-                      </p>
-                    </div>
-                    <div className={`${getScoreBg(source.sentiment_score)} rounded-lg p-3`}>
-                      <p className="text-white/70 text-xs">Sentiment</p>
-                      <p className={`${getScoreColor(source.sentiment_score)} font-bold text-lg`}>
-                        {source.sentiment_score}
                       </p>
                     </div>
                   </div>
 
-                  {/* Published Date */}
-                  <p className="text-white/60 text-sm">
-                    Published: {new Date(source.published_at).toLocaleDateString()}
-                  </p>
                 </div>
               </StaggeredItem>
             ))}
@@ -403,13 +362,13 @@ export default function SourcesPage() {
             <StaggeredItem key="add-source" delay={sources.length * 0.1}>
               <button
                 onClick={() => setShowAddForm(true)}
-                className="bg-black/90 backdrop-blur-md rounded-xl border-2 border-dashed border-emerald-500/50 p-6 hover:border-emerald-400 hover:bg-emerald-500/10 transition-all duration-300 min-h-[300px] flex flex-col items-center justify-center group"
+                className="bg-black/90 backdrop-blur-md rounded-xl border-2 border-dashed border-emerald-500/50 p-4 sm:p-6 hover:border-emerald-400 hover:bg-emerald-500/10 transition-all duration-300 min-h-[250px] sm:min-h-[300px] flex flex-col items-center justify-center group"
               >
-                <div className="text-6xl text-emerald-500 group-hover:text-emerald-400 transition-colors duration-300 mb-4">
+                <div className="text-4xl sm:text-6xl text-emerald-500 group-hover:text-emerald-400 transition-colors duration-300 mb-3 sm:mb-4">
                   +
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Add New Source</h3>
-                <p className="text-white/70 text-center">Click to add a new news source to the system</p>
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-2">Add New Source</h3>
+                <p className="text-white/70 text-center text-sm sm:text-base">Click to add a new news source to the system</p>
               </button>
             </StaggeredItem>
           </StaggeredContainer>
@@ -417,7 +376,7 @@ export default function SourcesPage() {
           {/* Footer */}
           <div className="mt-12 text-center">
             <p className="text-white/60">
-              Showing {sources.length} sources • {useMockData ? 'Mock data for development' : 'Live data from FastAPI'}
+              Showing {sources.length} source(s) • {useMockData ? 'Mock data for development' : 'Live data from The World Wide Web'}
             </p>
           </div>
         </div>
@@ -427,9 +386,9 @@ export default function SourcesPage() {
       {showAddForm && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-black/90 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 max-w-md w-full">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-white">Add New Source</h2>
+            <div className="p-4 sm:p-6">
+              <div className="flex justify-between items-center mb-4 sm:mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold text-white">Add New Source</h2>
                 <button
                   onClick={closeAddForm}
                   className="text-white/60 hover:text-white text-2xl font-bold"
@@ -497,7 +456,7 @@ export default function SourcesPage() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-6 py-2 bg-gradient-to-r from-emerald-600 via-lime-400 to-emerald-500 text-white rounded-lg hover:from-emerald-500 hover:via-lime-300 hover:to-emerald-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-6 py-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/30 hover:text-emerald-300 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {submitting ? 'Adding...' : 'Add Source'}
                   </button>
@@ -508,5 +467,11 @@ export default function SourcesPage() {
         </div>
       )}
     </div>
+
+    {/* Team Footer - Outside main container */}
+    <p className="text-white/60 text-xs sm:text-sm text-center mt-6 sm:mt-8 mb-8 sm:mb-12 px-4">
+      With ❤️ from Necirvan, Yuyao, Cindy and Rayan.
+    </p>
+    </>
   );
 }
