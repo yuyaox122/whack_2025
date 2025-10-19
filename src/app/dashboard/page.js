@@ -10,9 +10,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 // Separate component for the add event form to isolate form state
 function AddEventForm({ isOpen, onClose, onSubmit, submitting }) {
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    category: ''
+    title: ''
   });
 
   const handleInputChange = (e) => {
@@ -26,12 +24,12 @@ function AddEventForm({ isOpen, onClose, onSubmit, submitting }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(formData);
-    setFormData({ title: '', description: '', category: '' });
+    setFormData({ title: '' });
   };
 
   const handleClose = () => {
     onClose();
-    setFormData({ title: '', description: '', category: '' });
+    setFormData({ title: '' });
   };
 
   if (!isOpen) return null;
@@ -54,7 +52,7 @@ function AddEventForm({ isOpen, onClose, onSubmit, submitting }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="title" className="block text-sm font-medium text-white/80 mb-2">
-              Event Title *
+              Header *
             </label>
             <input
               type="text"
@@ -64,48 +62,8 @@ function AddEventForm({ isOpen, onClose, onSubmit, submitting }) {
               onChange={handleInputChange}
               required
               className="w-full px-4 py-3 bg-black/40 border border-emerald-500/30 rounded-lg text-white placeholder-white/40 focus:border-emerald-500 focus:outline-none transition-colors duration-200"
-              placeholder="Enter event title"
+              placeholder="Enter header"
             />
-          </div>
-          
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-white/80 mb-2">
-              Description *
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              required
-              rows={3}
-              className="w-full px-4 py-3 bg-black/40 border border-emerald-500/30 rounded-lg text-white placeholder-white/40 focus:border-emerald-500 focus:outline-none transition-colors duration-200 resize-none"
-              placeholder="Describe the event"
-            />
-          </div>
-          
-          <div>
-            <label htmlFor="category" className="block text-sm font-medium text-white/80 mb-2">
-              Category
-            </label>
-            <select
-              id="category"
-              name="category"
-              value={formData.category}
-              onChange={handleInputChange}
-              className="w-full px-4 py-3 bg-black/40 border border-emerald-500/30 rounded-lg text-white focus:border-emerald-500 focus:outline-none transition-colors duration-200"
-            >
-              <option value="">Select a category</option>
-              <option value="Environment">Environment</option>
-              <option value="Technology">Technology</option>
-              <option value="Health">Health</option>
-              <option value="Sports">Sports</option>
-              <option value="Politics">Politics</option>
-              <option value="Economy">Economy</option>
-              <option value="Science">Science</option>
-              <option value="Entertainment">Entertainment</option>
-              <option value="Custom">Custom</option>
-            </select>
           </div>
           
           <div className="flex space-x-4 pt-4">
@@ -339,10 +297,10 @@ export default function Dashboard() {
         const newEvent = {
           id: (events.length + 1).toString(),
           title: formData.title,
-          description: formData.description,
+          description: '',
           header: (
             <div className="h-32 w-full rounded-lg flex items-center justify-center bg-gradient-to-br from-purple-500/40 to-purple-600/80">
-              <div className="text-white/80 font-semibold text-lg">{formData.category || 'Custom'}</div>
+              <div className="text-white/80 font-semibold text-lg">Custom</div>
             </div>
           ),
           icon: (
@@ -350,7 +308,7 @@ export default function Dashboard() {
               C
             </div>
           ),
-          category: formData.category || 'Custom',
+          category: 'Custom',
           color: '#8b5cf6',
           relevance_score: 7.0,
           trending_score: 6.5,
@@ -365,7 +323,7 @@ export default function Dashboard() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify({ title: formData.title }),
         });
         
         if (response.ok) {
@@ -541,28 +499,6 @@ export default function Dashboard() {
                   </div>
                     </StaggeredItem>
                 ))}
-                
-                {/* Add Event Button */}
-                <StaggeredItem delay={events.length * 0.1}>
-                  <div
-                    onClick={handleAddEvent}
-                    className="cursor-pointer hover:scale-105 transition-transform duration-200"
-                  >
-                    <div className="group relative h-full min-h-[250px] sm:min-h-[300px] rounded-xl border border-dashed border-emerald-500/30 bg-black/20 dark:bg-black/20 backdrop-blur-md p-4 sm:p-8 flex flex-col items-center justify-center hover:border-emerald-500/60 hover:bg-emerald-500/10 transition-all duration-300">
-                      <div className="flex items-center justify-center w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/30 group-hover:bg-emerald-500/30 transition-all duration-300 mb-4">
-                        <svg className="w-8 h-8 text-emerald-400 group-hover:text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                      </div>
-                      <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-emerald-300 transition-colors duration-300">
-                        Add Event
-                      </h3>
-                      <p className="text-sm text-white/60 text-center group-hover:text-white/80 transition-colors duration-300">
-                        Create a new custom event
-                      </p>
-                    </div>
-                  </div>
-                </StaggeredItem>
               </BentoGrid>
               </StaggeredContainer>
             </div>
@@ -592,24 +528,22 @@ export default function Dashboard() {
         {/* Footer with Source List and Add Event Buttons */}
         <div className="mt-8 sm:mt-12 mb-8 flex justify-center bg-gradient-to-t from-[#071018] via-[#0a1419] to-transparent min-h-32 sm:min-h-40 px-4">
           <FadeInUp delay={0.3}>
-            <div className="flex gap-4">
+            <div className="flex gap-4 items-center">
               <Link
                 href="/sources"
-                className="px-4 sm:px-6 py-2 sm:py-3 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/30 hover:text-emerald-300 transition-all duration-300 font-semibold text-sm sm:text-base"
+                className="inline-flex items-center h-10 sm:h-12 px-4 sm:px-6 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/30 hover:text-emerald-300 transition-all duration-300 font-semibold text-sm sm:text-base"
               >
                 Source List
               </Link>
-              {layoutMode === 'bubble' && (
-                <button
-                  onClick={handleAddEvent}
-                  className="px-3 sm:px-4 py-2 sm:py-3 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/30 hover:text-emerald-300 transition-all duration-300 font-semibold text-sm sm:text-base flex items-center justify-center"
-                  title="Add Event"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                </button>
-              )}
+              <button
+                onClick={handleAddEvent}
+                className="inline-flex items-center justify-center h-10 sm:h-12 px-3 sm:px-4 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/30 hover:text-emerald-300 transition-all duration-300 font-semibold text-sm sm:text-base"
+                title="Add Event"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </button>
             </div>
           </FadeInUp>
         </div>
