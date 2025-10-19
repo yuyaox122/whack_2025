@@ -23,10 +23,12 @@ export default function BubbleMap({ data, width = 800, height = 600, onItemClick
 
     // Helper function to wrap text
     function wrapText(text, charsPerLine) {
+      if (!text) return '';
+      text = String(text); // ensure it's a string
       const words = text.split(' ');
       const lines = [];
       let currentLine = '';
-
+    
       words.forEach(word => {
         if ((currentLine + word).length <= charsPerLine) {
           currentLine += (currentLine ? ' ' : '') + word;
@@ -41,11 +43,8 @@ export default function BubbleMap({ data, width = 800, height = 600, onItemClick
           }
         }
       });
-
-      if (currentLine) {
-        lines.push(currentLine);
-      }
-
+    
+      if (currentLine) lines.push(currentLine);
       return lines;
     }
 
@@ -97,10 +96,13 @@ export default function BubbleMap({ data, width = 800, height = 600, onItemClick
     const bubbleData = data;
 
     // Calculate bubble sizes based on text length (Birdeye style)
-    const textLengths = bubbleData.map(d => d.title.length);
+    const textLengths = bubbleData.map(d => {console.log(d); return d.headline.length;});
     const sizeScale = d3.scaleSqrt()
       .domain([d3.min(textLengths), d3.max(textLengths)])
       .range([50, 120]); // Larger bubbles for desktop
+
+    console.log("Here are all the sizes: !!!")
+    console.log(sizeScale);
 
     // Create bubbles
     const bubbles = container.selectAll('g.bubble')
@@ -117,7 +119,7 @@ export default function BubbleMap({ data, width = 800, height = 600, onItemClick
       const angle = (i / bubbleData.length) * 2 * Math.PI;
       const x = centerX + radius * Math.cos(angle);
       const y = centerY + radius * Math.sin(angle);
-      const r = sizeScale(d.title.length);
+      const r = sizeScale(d.headline.length);
       
       d.x = x;
       d.y = y;
@@ -150,7 +152,7 @@ export default function BubbleMap({ data, width = 800, height = 600, onItemClick
         // Add wrapped text that fits within the bubble (Birdeye style)
         const fontSize = Math.max(12, Math.min(16, d.r / 6));
       const charsPerLine = Math.floor((d.r * 2 * 0.8) / (fontSize * 0.6)); // Estimate chars per line
-      const lines = wrapText(d.title, charsPerLine);
+      const lines = wrapText(d.headline, charsPerLine);
         const lineHeight = fontSize * 1.1;
       const totalHeight = lines.length * lineHeight;
       const startY = -(totalHeight / 2) + (lineHeight / 2);
@@ -288,7 +290,7 @@ export default function BubbleMap({ data, width = 800, height = 600, onItemClick
         .each(function(d) {
           const fontSize = Math.max(11, Math.min(18, d.r / 7));
           const charsPerLine = Math.floor((d.r * 2 * 0.8) / (fontSize * 0.6));
-          const lines = wrapText(d.title, charsPerLine);
+          const lines = wrapText(d.headline, charsPerLine);
           const lineHeight = fontSize * 1.2;
           const totalHeight = lines.length * lineHeight;
           const startY = -(totalHeight / 2) + (lineHeight / 2);
