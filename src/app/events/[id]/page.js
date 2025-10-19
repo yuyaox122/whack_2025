@@ -13,7 +13,7 @@ export default function EventDetailPage() {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [useMockData, setUseMockData] = useState(true);
+  const [useMockData, setUseMockData] = useState(false);
   const [findingSources, setFindingSources] = useState(false);
   const [abortController, setAbortController] = useState(null);
 
@@ -69,13 +69,56 @@ export default function EventDetailPage() {
           await new Promise(resolve => setTimeout(resolve, 500));
           setEvent(mockEvent);
         } else {
-          // Real FastAPI call
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/events/${eventId}`);
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+          const data = JSON.parse(localStorage.getItem('eventsCache'));
+
+          // Real FastAPI call - get all events and find the matching cluster
+
+          // const data = await response.json();
+          
+          // Find the event cluster that matches the eventId
+          const clusterLabel = data.cluster_labels.find(cl => cl.cluster_id === parseInt(eventId));
+          
+          if (!clusterLabel) {
+            throw new Error('Event not found');
           }
-          const data = await response.json();
-          setEvent(data.event);
+          
+          // Get all headlines for this cluster
+          const clusterHeadlines = data.headlines.filter(h => h.cluster === parseInt(eventId));
+          console.log(clusterHeadlines);
+          // Transform the data to match your component's expected format
+          const transformedEvent = {
+            id: eventId,
+            title: clusterLabel.generated_headline,
+            description: clusterLabel.generated_headline, // You might want to generate a better description
+            category: 'News', // You can categorize based on sentiment or other metrics
+            cluster_size: clusterHeadlines.length,
+            keywords: [], // Extract from headlines if needed
+            // Group sources by metrics - you'll need to calculate these based on your data
+            reliability_sources: clusterHeadlines.slice(0, 5).map((h, idx) => ({
+              name: h.source_id || `Source ${idx + 1}`,
+              score: h.metrics?.reliability || 6.7,
+              url: h.link || '#'
+            })),
+            neutrality_sources: clusterHeadlines.slice(0, 5).map((h, idx) => ({
+              name: h.source_id || `Source ${idx + 1}`,
+              score: h.sentiment?.neutrality || 6.9,
+              url: h.link || '#'
+            })),
+            accuracy_sources: clusterHeadlines.slice(0, 5).map((h, idx) => ({
+              name: h.source_id || `Source ${idx + 1}`,
+              score: h.metrics?.accuracy || 7.1,
+              url: h.link || '#'
+            })),
+            metric_here_sources: clusterHeadlines.slice(0, 5).map((h, idx) => ({
+              name: h.source_id || `Source ${idx + 1}`,
+              score: ((h.metrics?.reliability ||8.10) + (h.sentiment?.neutrality || 9.1) + (h.metrics?.accuracy || 0)) / 3,
+              url: h.link || '#'
+            })),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+          
+          setEvent(transformedEvent);
         }
       } catch (err) {
         setError(err.message);
@@ -120,7 +163,7 @@ export default function EventDetailPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          query: event.title,
+          query: event.headline ,
           eventId: event.id
         }),
         signal: controller.signal, // Allow cancellation

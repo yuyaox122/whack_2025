@@ -253,7 +253,7 @@ export default function Dashboard() {
 useEffect(() => {
   const CACHE_KEY = 'eventsCache';
   const CACHE_TIME_KEY = 'eventsCacheTime';
-  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+  const CACHE_DURATION = 60 * 1000; // 1minute 
 
   const fetchEvents = async () => {
     setLoading(true);
