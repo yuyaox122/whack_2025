@@ -1,5 +1,6 @@
 'use client';
 
+import { number } from "motion";
 import { BentoGrid, BentoGridItem } from "../../components/ui/bento-grid";
 import BubbleMap from "../../components/ui/bubble-map";
 import { StaggeredContainer, StaggeredItem, FadeInUp, SlideInFromLeft, SlideInFromRight } from "../../components/ui/page-transition";
@@ -134,7 +135,7 @@ export default function Dashboard() {
   const [layoutMode, setLayoutMode] = useState('grid'); // 'grid' or 'bubble'
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [useMockData, setUseMockData] = useState(true);
+  const [useMockData, setUseMockData] = useState(false);
   const [bubbleWidth, setBubbleWidth] = useState(800);
   const [showAddEventForm, setShowAddEventForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -290,40 +291,62 @@ export default function Dashboard() {
     };
   }, []);
 
-  // Fetch events from API
-  useEffect(() => {
-    const fetchEvents = async () => {
-      setLoading(true);
-      
-      try {
-        if (useMockData) {
-          // Use mock data
-          setEvents(mockItems);
-        } else {
-          // Fetch from FastAPI
-          console.log('Fetching events from FastAPI...');
-          const response = await fetch('http://127.0.0.1:8000/events');
-          console.log('Events response status:', response.status);
-          if (!response.ok) {
-            throw new Error('Failed to fetch events');
-          }
-          const result = await response.json();
-          console.log('Events API result:', result);
-          // Transform API data to match expected format
-          const transformedEvents = result.events || result || [];
-          setEvents(transformedEvents);
-        }
-      } catch (err) {
-        console.error('Error fetching events:', err);
-        // Fallback to mock data on error
-        setEvents(mockItems);
-      } finally {
-        setLoading(false);
-      }
-    };
+// Fetch events from API with 5-minute cache
+useEffect(() => {
+  const CACHE_KEY = 'eventsCache';
+  const CACHE_TIME_KEY = 'eventsCacheTime';
+  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-    fetchEvents();
-  }, [useMockData]);
+  const fetchEvents = async () => {
+    setLoading(true);
+    try {
+      if (useMockData) {
+        setEvents(mockItems);
+        return;
+      }
+
+      // Check cache
+      const cached = localStorage.getItem(CACHE_KEY);
+      const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
+      if (cached && cachedTime) {
+        const age = Date.now() - parseInt(cachedTime, 10);
+        if (age < CACHE_DURATION) {
+          console.log('Using cached events');
+          setEvents(JSON.parse(cached));
+          return;
+        }
+      }
+
+      // Fetch from FastAPI
+      console.log('Fetching events from FastAPI...');
+      const response = await fetch('http://127.0.0.1:8000/events');
+      console.log('Events response status:', response.status);
+      if (!response.ok) {
+        throw new Error('Failed to fetch events');
+      }
+
+      const result = await response.json();
+      console.log('Events API result:', result);
+      const transformedEvents = result || [];
+
+      // Save to cache
+      localStorage.setItem(CACHE_KEY, JSON.stringify(transformedEvents));
+      localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
+
+      setEvents(transformedEvents);
+
+    } catch (err) {
+      console.error('Error fetching events:', err);
+      // Fallback to mock data on error
+      setEvents(mockItems);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchEvents();
+}, [useMockData]);
+
 
   const handleItemClick = (item) => {
     // Navigate directly to event details page
@@ -374,6 +397,7 @@ export default function Dashboard() {
           if (response.ok) {
             const data = await response.json();
             setEvents(data.result || data);
+            console.log(events);
           }
         } else {
           console.error('Failed to add event:', response.status);
@@ -400,14 +424,31 @@ export default function Dashboard() {
 
 
   // Transform events for bubblemap (memoized to prevent unnecessary re-renders)
-  const bubbleData = useMemo(() => events.map((item, index) => ({
-    id: index.toString(),
-    title: item.title,
-    description: item.description,
-    value: item.sources_count,
-    category: item.category,
-    color: item.color,
-  })), [events]);
+//  const bubbleData = useMemo(() => events.map((item, index) => ({
+//    id: index.toString(),
+//    title: item.title,
+//    description: item.description,
+//    value: item.sources_count,
+//    category: item.category,
+//    color: item.color,
+//  })), [events]);
+const bubbleData = useMemo(() => {
+  if (!events || !events.cluster_labels || !events.headlines) return [];
+
+  const result = [];
+  for (let i = 0; i < events.cluster_labels.length; i++) {
+    const item = events.cluster_labels[i]; // <-- use headlines array
+    result.push({
+      id: i.toString(),
+      headline: item.headline,
+      number: events.headlines.filter(h => h === item),
+      description: item.summary || "", // if you have summaries
+      color: "#" + ((1 << 24) * Math.random() | 0).toString(16).padStart(6, "0"),
+    });
+  }
+  return result;
+}, [events]);
+
 
   return (
     <>
@@ -526,21 +567,31 @@ export default function Dashboard() {
             <div className={layoutMode === 'grid' ? 'block' : 'hidden'}>
               <StaggeredContainer>
               <BentoGrid className="max-w-7xl mx-auto px-4 sm:px-0">
-                {events.map((item, i) => (
+              {(() => {
+                const items = [];
+                if (!events || !events.cluster_labels || !events.headlines) return [];
+                
+                for (let i = 0; i < events.cluster_labels.length; i++) {
+                  const item = events.cluster_labels[i];
+                  items.push(
                     <StaggeredItem key={i} delay={i * 0.1}>
-                  <div
-                    onClick={() => handleItemClick(item)}
-                    className="cursor-pointer"
-                  >
-                    <BentoGridItem
-                      title={item.title}
-                      description={item.description}
-                      header={item.header}
-                      className={i === 3 || i === 6 ? "md:col-span-2" : ""}
-                    />
-                  </div>
+                      <div
+                        onClick={() => handleItemClick(item)}
+                        className="cursor-pointer"
+                      >
+                        <BentoGridItem
+                          headline={item.headline}
+                          description={`${item.summary || ''}\nSources: ${item.count}`}
+                          header={item.header}
+                          className={i === 3 || i === 6 ? "md:col-span-2" : ""}
+                        />
+                      </div>
                     </StaggeredItem>
-                ))}
+                  );
+                }
+                return items;
+              })()}
+
                 
                 {/* Add Event Button */}
                 <StaggeredItem delay={events.length * 0.1}>

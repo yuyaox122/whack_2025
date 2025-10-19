@@ -17,7 +17,7 @@ export const BentoGrid = ({
 
 export const BentoGridItem = ({
   className,
-  title,
+  headline,
   description,
   header,
   icon
@@ -33,7 +33,7 @@ export const BentoGridItem = ({
         {icon && icon}
         <div
           className="mt-2 mb-2 font-sans font-bold text-white">
-          {title}
+          {headline}
         </div>
         <div
           className="font-sans text-xs font-normal text-white/80">
